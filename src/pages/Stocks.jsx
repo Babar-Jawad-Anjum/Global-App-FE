@@ -8,38 +8,75 @@ import Layout from "../layout/Layout";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { TextField } from "@mui/material";
+import Backdrop from "../components/Backdrop";
+import { CSVLink } from "react-csv";
 
-const Stocks = () => {
+const Stocks = ({ isLoading, setIsLoading }) => {
   const [stocks, setStocks] = useState(null);
   const [search, setSearch] = useState("");
   const CCode = localStorage.getItem("CCode");
-  const UserId = localStorage.getItem("UserId");
 
   useEffect(() => {
+    setIsLoading(true);
     axios
-      .get(`http://localhost:3001/getStocks/${CCode}`)
+      .get(`https://gloabl-app.onrender.com/api/getStocks/${CCode}`)
       .then(function (response) {
+        setIsLoading(false);
+
         setStocks(response.data);
       })
       .catch(function (error) {
         console.log(error);
+        setIsLoading(false);
       });
-  }, []);
+  }, [CCode, setIsLoading]);
 
   const handleSearch = (e) => {
     setSearch(e.target.value);
   };
 
+  const csvHeader = [
+    { label: `PCode`, key: `PCode` },
+    { label: `Product Name`, key: `ProductName` },
+    { label: `Balance`, key: `Balance` },
+    { label: `Last Update`, key: `LastUpdate` },
+  ];
+
+  const prepareCSVData = (data) => {
+    const finalData = [];
+    //Data For Filter Status "All"
+    data.map((element) => {
+      let obj = {
+        PCode: element.PCode,
+        ProductName: element.ProductName,
+        Balance: element.Balance,
+        LastUpdate: element.LastUpdate,
+      };
+      finalData.push(obj);
+      return obj;
+    });
+
+    return finalData;
+  };
+
   return (
     <Layout>
       <div className="ml-2 mb-4">
-        <TextField
-          id="standard-password-input"
-          label="Search by name"
-          type="text"
-          className="p-2"
-          onChange={handleSearch}
-        />
+        {isLoading ? <Backdrop /> : ""}
+        <div className="flex flex-col md:flex-row md:justify-between items-center">
+          <TextField
+            id="standard-password-input"
+            label="Search by name"
+            type="text"
+            className="p-2"
+            onChange={handleSearch}
+          />
+          <div className="bg-[#8863C7] text-white p-2 text-sm px-3  hover:cursor-pointer rounded-md mt-5 md:mt-0">
+            <CSVLink data={prepareCSVData(stocks ?? [])} headers={csvHeader}>
+              Export Data
+            </CSVLink>
+          </div>
+        </div>
       </div>
       <TableContainer>
         <Table sx={{ minWidth: 800 }} aria-label="simple table">

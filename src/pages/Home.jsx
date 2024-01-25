@@ -1,30 +1,36 @@
 import React, { useEffect, useState } from "react";
 import Layout from "../layout/Layout";
 import axios from "axios";
+import Backdrop from "../components/Backdrop";
 
-const HomePage = () => {
+const HomePage = ({ isLoading, setIsLoading }) => {
   const [average, setAverage] = useState(null);
   const CCode = localStorage.getItem("CCode");
-  const UserId = localStorage.getItem("UserId");
   const Username = localStorage.getItem("UserName");
 
   useEffect(() => {
+    setIsLoading(true);
     axios
-      .get(`http://localhost:3001/getAverage/${CCode}`)
+      .get(`https://gloabl-app.onrender.com/api/getAverage/${CCode}`)
       .then(function (response) {
         setAverage(response.data);
+        setIsLoading(false);
       })
       .catch(function (error) {
+        setIsLoading(false);
         console.log(error);
       });
-  }, []);
+  }, [CCode, setIsLoading]);
 
   console.log(average);
 
   return (
     <Layout>
       <>
+        {isLoading ? <Backdrop /> : ""}
+
         <h3 className="font-semibold mb-8 text-md">
+          {/* <Backdrop /> */}
           Welcome, <span className="text-[17px]">{Username}</span>
         </h3>
         {average ? (
@@ -49,7 +55,9 @@ const HomePage = () => {
 
                 <h1 className="font-semibold text-sm">Avg. Purchase Rate</h1>
                 {average && (
-                  <h1 className="font-bold my-3">{average[0].Purchase}</h1>
+                  <h1 className="font-bold my-3">
+                    {average[0]?.Purchase ? average[0]?.Purchase : 0}
+                  </h1>
                 )}
               </div>
             </div>
@@ -72,7 +80,9 @@ const HomePage = () => {
                 </svg>
                 <h1 className="font-semibold text-sm">Avg. Sales Rate</h1>
                 {average && (
-                  <h1 className="font-bold my-3">{average[0].Sales}</h1>
+                  <h1 className="font-bold my-3">
+                    {average[0]?.Sales ? average[0]?.Sales : 0}
+                  </h1>
                 )}
               </div>
             </div>
@@ -96,7 +106,9 @@ const HomePage = () => {
 
                 <h1 className="font-semibold text-sm">Difference</h1>
                 {average && (
-                  <h1 className="font-bold my-3">{average[0].Diff}</h1>
+                  <h1 className="font-bold my-3">
+                    {average[0]?.Diff ? average[0]?.Diff : 0}
+                  </h1>
                 )}
               </div>
             </div>
